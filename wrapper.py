@@ -334,3 +334,15 @@ def get_slider_data(event):
     event.outEv = (event.inEv << 16) // 16383
     event.inEv -= 0x2000
     return event.inEv + 0x2000
+
+def set_fader(arguments_in_tuple):
+    if callable(arguments_in_tuple[0]):
+        track_event_id = arguments_in_tuple[0]()
+    else:
+        track_event_id = arguments_in_tuple[0]
+    level = arguments_in_tuple[1]
+    smooth_speed = arguments_in_tuple[2]
+    mixer.automateEvent(track_event_id, level, midi.REC_MIDIController, smooth_speed)
+
+def get_current_track_event_id():
+    return get_slider_event_id(get_selected_tracknumber())

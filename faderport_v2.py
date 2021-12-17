@@ -1,7 +1,6 @@
 # FLStudio API modules
 import device
 import general
-import mixer
 # Python libraries already included
 import midi
 # Custom libraries
@@ -74,8 +73,9 @@ class Controller():
     def OnInit(self):
         self.update_leds()
         # Setting controller logic as features
-        # Feature = ([conditions list], function name, extra parameters if any)
+        # Feature = ([conditions list], function name, (extra parameters if any))
         self.encoder_button.add_feature([self.pan_button.is_enabled], wrapper.pan_reset, None)
+        self.encoder_button.add_feature([], wrapper.set_fader, (wrapper.get_current_track_event_id, self.fader.LEVEL_RESET, self.fader.FADER_SMOOTH_SPEED))
 
         self.encoder_turn_left.add_feature([self.pan_button.is_enabled], wrapper.pan_left, None)
         self.encoder_turn_left.add_feature([self.marker_button.is_enabled], wrapper.go_to_previous_marker, None)
@@ -181,15 +181,14 @@ class Controller():
 
     def OnControlChange(self, event):
         if self.encoder_turn_left.is_left_event(event):
-            self.encoder_turn_left.handle_midi_event_with_feature(event)
+            self.encoder_turn_left.handle_midi_event(event)
         elif self.encoder_turn_right.is_right_event(event):
-            self.encoder_turn_right.handle_midi_event_with_feature(event)
+            self.encoder_turn_right.handle_midi_event(event)
 
     def OnPithBend(self, event):
-        trackEventId = wrapper.get_slider_event_id(wrapper.get_selected_tracknumber())
+        track_event_id = wrapper.get_current_track_event_id()
         level = self.fader.track_slider_to_level(wrapper.get_slider_data(event))
-        mixer.automateEvent(trackEventId, level,
-                            midi.REC_MIDIController, self.fader.FADER_SMOOTH_SPEED)
+        wrapper.set_fader((track_event_id, level, self.fader.FADER_SMOOTH_SPEED))
         event.handled = True
 
     def update_leds(self):

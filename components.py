@@ -19,12 +19,6 @@ class Feature:
         self._event_handled = False
         self.should_use_event_as_argument = False
 
-    def _return_true(self):  # for default feature
-        return True
-
-    def inverted(self, function_condition_list):
-        return not function_condition_list
-
     def evaluate_all_conditions_are_false(self):
         is_false = False
         for feature in self.feature_list:
@@ -230,7 +224,7 @@ class EndlessEncoder(Feature):
     def get_step_multiplied(self):
         return self.step * self.MULTIPLY_STEP_BY
 
-    def handle_midi_event_with_feature(self, event):
+    def handle_midi_event(self, event):
         if self.is_encoder_event(event):
             self.step = self.extract_step(event)
             result = self.exec(event)
@@ -241,6 +235,7 @@ class Slider():  # aka Fader
         self.id = id
         self.FADER_SMOOTH_SPEED = 469
         self.MAXIMUM_VALUE = round(13072 * 16000 / 12800)
+        self.LEVEL_RESET = 856562098
 
     def track_level_to_slider(self, Value, Max = midi.FromMIDI_Max):
         return round(Value / Max * self.MAXIMUM_VALUE)
