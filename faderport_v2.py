@@ -124,13 +124,10 @@ class Controller():
         wrapper.show_hint(f'{self.controller.NAME} controller unlinked')
 
     def OnRefresh(self, flags):
-        print('OnRefresh')
 
         if flags & midi.HW_Dirty_Mixer_Sel:
-            print('Mixer_Sel')
             pass
         if flags & midi.HW_Dirty_Mixer_Display:
-            print('Mixer_Display')
             pass
         if flags & midi.HW_Dirty_Mixer_Controls:
             self.update_device_fader()
@@ -198,6 +195,7 @@ class Controller():
     def update_leds(self):
         selected_tracknumber = wrapper.get_selected_tracknumber()
         if device.isAssigned():
+            self.play_button.refresh(wrapper.is_playing())
             self.stop_button.refresh(wrapper.is_stopped())
             self.loop_button.refresh(wrapper.is_pattern_mode())
             self.record_button.refresh(wrapper.is_recording())

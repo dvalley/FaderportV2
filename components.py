@@ -28,40 +28,25 @@ class Feature:
     def evaluate_all_conditions_are_false(self):
         is_false = False
         for feature in self.feature_list:
-            print('-- checking all false...')
             if len(feature[0]) > 0:
                 is_false = is_false or self.evaluate_all_conditions_per_component(feature[0])
-            print('-- checked all false --')
-        print(f'evaluate_all_conditions_are_false {not is_false}')
         return not is_false
 
     def evaluate_all_conditions_per_component(self, function_condition_list):
         is_true = True
-        print(f'number of conditions in list: {len(function_condition_list)}')
-        print(function_condition_list)
         for function_condition in function_condition_list:
             is_true = is_true and function_condition()
-        print(f'evaluate_all_conditions_per_component {is_true}')
         return is_true
 
     def should_run(self, function_condition_list):
-        print('=== CURRENT FEATURE LIST ===')
-        print(self.feature_list)
-        print('=== CONDITION LIST ===')
-        print(function_condition_list)
-        print('=== SHOULD RUN ===')
         if len(function_condition_list)==0:
             if self.evaluate_all_conditions_are_false():
-                print('default ready to exec')
                 return True
             else:
-                print('default but not ready to exec')
                 return False
         elif self.evaluate_all_conditions_per_component(function_condition_list):
-            print('all cond true ==>>')
             return True
         else:
-            print('all cond false ==>>')
             return False
 
 
@@ -83,19 +68,13 @@ class Feature:
     def exec(self, event):
         for feature in self.feature_list:
             if self.should_run(feature[0]):
-                print('\n====>> executing...')
-                print(f'Conditions list: {feature[0]} \nFunction: {feature[1]} \nArguments: {feature[2:]}')
-
                 parameters = feature[2:]
                 if self.should_use_event_as_argument:
-                    print(f'DEBUG: exec with event')
                     feature[1](event)
                     self.should_use_event_as_argument = False
                 elif parameters == (None,):
-                    print(f'DEBUG: exec with None')
                     feature[1]()
                 else:
-                    print(f'DEBUG: exec with tuple {parameters}')
                     parameter_evaluated = evaluate_parameter(parameters)
                     if parameter_evaluated is tuple:
                         # accept tuple as parameter
@@ -105,18 +84,8 @@ class Feature:
                 self._event_handled = self._event_handled | True  # Event is handled if at least one condition is met
         return self._event_handled
 
-    # All features, except this one, are False
-    # def is_default_feature(self):
-    #     are_previous_features_false = True
-    #     for feature in self.feature_list:
-    #         if feature[0] not in [self.is_default_feature, self.should_use_event] and self.are_all_function_conditions_true(feature[0]):
-    #             are_previous_features_false = are_previous_features_false & False
-    #     return are_previous_features_false
-
     def add_feature(self, function_condition_list: list, function, *args):
         self.feature_list = self.feature_list + [(function_condition_list, function, *args)]
-        #if len(function_condition_list) == 0:
-        #    self.expand_default_feature_conditions()
 
 class Led:
     def __init__(self, id, on_id, off_id):
@@ -187,7 +156,6 @@ class Button(Feature):
         return self.led.is_led_on()
 
     def handle_midi_event(self, event, toggle_led=False):
-        print(f'Handled: {event.handled}')
         if not event.handled and event.data1 == self.id:
             event.handled = self.exec(event)
             if toggle_led:
@@ -254,7 +222,6 @@ class EndlessEncoder(Feature):
             step = event.data2 - self.id_left + 1
         else:
             step = event.data2 - self.id_right + 1
-        print(f'Step: {step}')
         return step
 
     def get_step(self):

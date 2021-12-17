@@ -11,7 +11,7 @@ import ui
 
 import midi
 # User libraries
-import pykeys
+# import pykeys
 
 ENABLE = 1
 DISABLE = 0
@@ -83,7 +83,6 @@ def set_playback_speed_to_normal():
     transport.setPlaybackSpeed(1)
 
 def play_pause(event):
-    print('play pause')
     send_event_to_globaltransport(event, midi.FPT_Play)
 
 def play_stop():
@@ -247,21 +246,12 @@ def close_window():
     ui.escape()
 
 def bypass():
+    # TODO
     pass
-        # for x in range(0, 2):
-        #     print(plugins.getPluginName(get_selected_tracknumber(), x))
-        #     print(mixer.getTrackPluginId(get_selected_tracknumber(), x))
-
-        # mixer.armTrack(get_selected_tracknumber())
-        # __send_note_on_or_off_to_device(event, mixer.isTrackArmed(get_selected_tracknumber()))
-
 
 def touch():
+    # TODO
     pass
-        # for x in range(0, 2):
-        #     print(plugins.getPluginName(get_selected_tracknumber(), x))
-        #     print(mixer.getTrackPluginId(get_selected_tracknumber(), x))
-        # transport.globalTransport(midi.FPT_Escape, 1, 111)
 
 def undo_redo(event):
     if (transport.globalTransport(midi.FPT_Undo, int(event.data2 > 0) * 2, event.pmeFlags) == midi.GT_Global) & (event.data2 > 0):
@@ -269,11 +259,9 @@ def undo_redo(event):
 
 def redo():
     general.undoDown()
-    # show_hint(general.getUndoLevelHint)
 
 def undo():
     general.undoUp()
-    # show_hint(general.getUndoLevelHint)
 
 def set_pan(pan_amount):
     mixer.setTrackPan(get_selected_tracknumber(), pan_amount)
@@ -334,7 +322,9 @@ def get_track_color(index =  get_selected_tracknumber()):
     return mixer.getTrackColor(index)
 
 def tap_tempo():
-    pykeys.send('f5', shift, 1, ctrl, opt_alt)
+    pass
+    # TODO
+    #pykeys.send('f5', shift, 1, ctrl, opt_alt)
     # transport.globalTransport(midi.FPT_TapTempo, 1)
     # current_tempo = str(mixer.getCurrentTempo(True))[:-2]
     # show_hint("Tempo: "+current_tempo)
@@ -344,15 +334,3 @@ def get_slider_data(event):
     event.outEv = (event.inEv << 16) // 16383
     event.inEv -= 0x2000
     return event.inEv + 0x2000
-
-# ============== RJAY FUNCTIONS ===============
-# NOT WORKING so far
-
-# Assign the modifier key 0 for not pressed, and 1 if pressed.
-shift = 0
-cmd_win = 0    # Win key on windows and Command key on Macs
-ctrl = 0       # Ctrl key on both win/mac
-opt_alt = 0    # Alt key on windows and Option key on Macs
-
-# retValue = pykeys.send('f6', shift, cmd_win, ctrl, opt_alt)
-# Returns true if successfully sent.
