@@ -18,6 +18,9 @@ Copy following python files into this folder.
 
 [Wrapper](wrapper.py): Fl Studio wrapper library with simplified and easy to understand functions/methods.
 
+Port must be set to 0 on input and output. To open MIDI settings: F10.
+I do not know why but Omni channel must be also set to 1, otherwise unasigned buttons triggers channel element playback.
+
 ## Customize
 Customize files if needed.
 
@@ -30,7 +33,6 @@ Customize files if needed.
     * Use a meaningful and easy to understand name for functions, variables, classes, etc.
 
 [Python style from Google](https://google.github.io/styleguide/pyguide.html)
-
 
 
 
