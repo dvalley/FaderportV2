@@ -235,6 +235,7 @@ class Slider():  # aka Fader
         self.id = id
         self.FADER_SMOOTH_SPEED = 469
         self.MAXIMUM_VALUE = round(13072 * 16000 / 12800)
+        self.MINIMUM_VALUE = 0
         self.LEVEL_RESET = 856562098
 
     def track_level_to_slider(self, Value, Max = midi.FromMIDI_Max):

@@ -76,6 +76,7 @@ class Controller():
         # Feature = ([conditions list], function name, (extra parameters if any))
         self.encoder_button.add_feature([self.pan_button.is_enabled], wrapper.pan_reset, None)
         self.encoder_button.add_feature([], wrapper.set_fader, (wrapper.get_current_track_event_id, self.fader.LEVEL_RESET, self.fader.FADER_SMOOTH_SPEED))
+        self.encoder_button.add_feature([self.shift_button.is_enabled], wrapper.set_fader, (wrapper.get_current_track_event_id, self.fader.MINIMUM_VALUE, self.fader.FADER_SMOOTH_SPEED))
 
         self.encoder_turn_left.add_feature([self.pan_button.is_enabled], wrapper.pan_left, None)
         self.encoder_turn_left.add_feature([self.marker_button.is_enabled], wrapper.go_to_previous_marker, None)
