@@ -11,7 +11,7 @@ class Controller():
     def __init__(self, controller):
         self.controller = controller
 
-        self.fader = components.Slider(controller.FADER)
+        self.fader = components.Slider(controller.FADER, controller.FADER_MIDI_CHANNEL)
         self.MULTIPLY_STEP_BY = 100
         self.encoder_turn_left = components.EndlessEncoder(controller.ENCODER, controller.ENCODER_MIN_STEP_LEFT, controller.ENCODER_MIN_STEP_RIGHT, self.MULTIPLY_STEP_BY)
         self.encoder_turn_right = components.EndlessEncoder(controller.ENCODER, controller.ENCODER_MIN_STEP_LEFT, controller.ENCODER_MIN_STEP_RIGHT, self.MULTIPLY_STEP_BY)
@@ -74,27 +74,30 @@ class Controller():
         self.update_leds()
         # Setting controller logic as features
         # Feature = ([conditions list], function name, (extra parameters if any))
-        self.encoder_button.add_feature([self.pan_button.is_enabled], wrapper.pan_reset, None)
-        self.encoder_button.add_feature([], wrapper.set_fader, (wrapper.get_current_track_event_id, self.fader.LEVEL_RESET, self.fader.FADER_SMOOTH_SPEED))
-        self.encoder_button.add_feature([self.shift_button.is_enabled], wrapper.set_fader, (wrapper.get_current_track_event_id, self.fader.MINIMUM_VALUE, self.fader.FADER_SMOOTH_SPEED))
 
-        self.encoder_turn_left.add_feature([self.pan_button.is_enabled], wrapper.pan_left, None)
-        self.encoder_turn_left.add_feature([self.marker_button.is_enabled], wrapper.go_to_previous_marker, None)
-        self.encoder_turn_left.add_feature([self.scroll_button.is_enabled], wrapper.scroll_to_left, self.encoder_turn_left.get_step)
-        self.encoder_turn_left.add_feature([self.shift_button.is_enabled, self.scroll_button.is_enabled], wrapper.scroll_to_left, self.encoder_turn_left.get_step_multiplied)
-        self.encoder_turn_left.add_feature([self.shift_button.is_enabled, self.marker_button.is_enabled], wrapper.go_to_previous_marker, True)
+        ## Encoder
         self.encoder_turn_left.add_feature([], wrapper.select_previous_track, None) # default
-
-        self.encoder_turn_right.add_feature([self.pan_button.is_enabled], wrapper.pan_right, None)
-        self.encoder_turn_right.add_feature([self.marker_button.is_enabled], wrapper.go_to_next_marker, None)
-        self.encoder_turn_right.add_feature([self.scroll_button.is_enabled], wrapper.scroll_to_right, self.encoder_turn_right.get_step)
-        self.encoder_turn_right.add_feature([self.shift_button.is_enabled, self.scroll_button.is_enabled], wrapper.scroll_to_right, self.encoder_turn_right.get_step_multiplied)
-        self.encoder_turn_right.add_feature([self.shift_button.is_enabled, self.marker_button.is_enabled], wrapper.go_to_next_marker, True)
         self.encoder_turn_right.add_feature([], wrapper.select_next_track, None) # default
+        ### Pan
+        self.encoder_button.add_feature([self.pan_button.is_enabled], wrapper.pan_reset, None)
+        self.encoder_button.add_feature([], wrapper.set_fader, (self.fader.get_track_number, self.fader.LEVEL_RESET, self.fader.FADER_SMOOTH_SPEED))
+        self.encoder_button.add_feature([self.shift_button.is_enabled], wrapper.set_fader, (self.fader.get_track_number, self.fader.MINIMUM_VALUE, self.fader.FADER_SMOOTH_SPEED))
+        self.encoder_turn_left.add_feature([self.pan_button.is_enabled], wrapper.pan_left, None)
+        self.encoder_turn_right.add_feature([self.pan_button.is_enabled], wrapper.pan_right, None)
+        ### Marker
+        self.encoder_turn_left.add_feature([self.marker_button.is_enabled], wrapper.go_to_previous_marker, None)
+        self.encoder_turn_right.add_feature([self.marker_button.is_enabled], wrapper.go_to_next_marker, None)
+        self.encoder_turn_left.add_feature([self.shift_button.is_enabled, self.marker_button.is_enabled], wrapper.go_to_previous_marker, True)
+        self.encoder_turn_right.add_feature([self.shift_button.is_enabled, self.marker_button.is_enabled], wrapper.go_to_next_marker, True)
+        ### Scroll
+        self.encoder_turn_left.add_feature([self.scroll_button.is_enabled], wrapper.scroll_to_left, self.encoder_turn_left.get_step)
+        self.encoder_turn_right.add_feature([self.scroll_button.is_enabled], wrapper.scroll_to_right, self.encoder_turn_right.get_step)
+        self.encoder_turn_left.add_feature([self.shift_button.is_enabled, self.scroll_button.is_enabled], wrapper.scroll_to_left, self.encoder_turn_left.get_step_multiplied)
+        self.encoder_turn_right.add_feature([self.shift_button.is_enabled, self.scroll_button.is_enabled], wrapper.scroll_to_right, self.encoder_turn_right.get_step_multiplied)
 
-        # Buttons
-        self.solo_button.add_feature([], wrapper.solo, wrapper.get_selected_tracknumber)
-        self.mute_button.add_feature([], wrapper.mute, wrapper.get_selected_tracknumber)
+        ## Buttons
+        self.solo_button.add_feature([], wrapper.solo, self.fader.get_track_number)
+        self.mute_button.add_feature([], wrapper.mute, self.fader.get_track_number)
         self.mute_button.add_feature([self.shift_button.is_enabled], wrapper.mute_clear, None)
         self.arm_button.add_feature([], wrapper.arm, None)
 
@@ -108,6 +111,8 @@ class Controller():
         self.next_button.add_feature([self.shift_button.is_enabled], wrapper.redo, None)
         self.next_button.add_feature([], wrapper.select_next_track, None)
 
+        self.channel_button.add_feature([self.shift_button.is_enabled], self.fader.toggle_lock_track, wrapper.get_selected_tracknumber)
+        self.channel_button.add_feature([], self.fader.unlock_track, None)
         self.master_button.add_feature([], wrapper.tap_tempo, None)
         self.click_button.add_feature([self.click_button.use_event], wrapper.metronome)
 
@@ -125,25 +130,15 @@ class Controller():
         wrapper.show_hint(f'{self.controller.NAME} controller unlinked')
 
     def OnRefresh(self, flags):
-
         if flags & midi.HW_Dirty_Mixer_Sel:
             pass
         if flags & midi.HW_Dirty_Mixer_Display:
             pass
         if flags & midi.HW_Dirty_Mixer_Controls:
-            self.update_device_fader()
+            if not self.fader.is_track_locked():
+                self.fader.update_device_fader()
         if flags & midi.HW_Dirty_LEDs:
             self.update_leds()
-
-    def update_device_fader(self):
-        track_number = wrapper.get_selected_tracknumber()
-        trackEventId = wrapper.get_slider_event_id(track_number)
-        level = wrapper.get_slider_event_value(trackEventId)
-        pitchbend = self.fader.track_level_to_slider(level)
-        midi_pitchbend_data = self.fader.pitchbend_number_to_midi_message(pitchbend)
-        if device.isAssigned():
-            wrapper.send_midi_message_to_device(midi_pitchbend_data[0], self.controller.FADER_MIDI_CHANNEL,
-                                                        midi_pitchbend_data[1], midi_pitchbend_data[2])
 
     def OnMidiMsg(self, event):
         self.rewind_button.handle_midi_event(event, toggle_led=True)
@@ -171,7 +166,7 @@ class Controller():
 
             self.link_button.handle_midi_event(event, toggle_led=True)
             self.pan_button.handle_midi_event(event, toggle_led=True)
-            self.channel_button.handle_midi_event(event, toggle_led=True)
+            self.channel_button.handle_midi_event(event, toggle_led=True, blinking_enabled=self.shift_button.is_enabled())
             self.scroll_button.handle_midi_event(event, toggle_led=True)
             self.master_button.handle_midi_event(event, toggle_led=False)
             self.click_button.handle_midi_event(event, toggle_led=True)
@@ -187,7 +182,7 @@ class Controller():
             self.encoder_turn_right.handle_midi_event(event)
 
     def OnPithBend(self, event):
-        track_event_id = wrapper.get_current_track_event_id()
+        track_event_id = wrapper.get_current_track_event_id(self.fader.get_track_number())
         level = self.fader.track_slider_to_level(wrapper.get_slider_data(event))
         wrapper.set_fader((track_event_id, level, self.fader.FADER_SMOOTH_SPEED))
         event.handled = True

@@ -203,7 +203,8 @@ def set_led_off(id):
     device.midiOutMsg((id << 8) + midi.TranzPort_OffOnT[0], 0)
 
 def send_midi_message_to_device(midiId, channel, data1, data2):
-    device.midiOutMsg(midiId, channel, data1, data2)
+    if device.isAssigned():
+        device.midiOutMsg(midiId, channel, data1, data2)
 
 def solo(*track_number_tuple):
     mixer.soloTrack(get_value_from_tuple(track_number_tuple), midi.fxSoloToggle)
@@ -337,12 +338,12 @@ def get_slider_data(event):
 
 def set_fader(arguments_in_tuple):
     if callable(arguments_in_tuple[0]):
-        track_event_id = arguments_in_tuple[0]()
+        track_event_id = get_current_track_event_id(arguments_in_tuple[0]())
     else:
         track_event_id = arguments_in_tuple[0]
     level = arguments_in_tuple[1]
     smooth_speed = arguments_in_tuple[2]
     mixer.automateEvent(track_event_id, level, midi.REC_MIDIController, smooth_speed)
 
-def get_current_track_event_id():
-    return get_slider_event_id(get_selected_tracknumber())
+def get_current_track_event_id(track_number):
+    return get_slider_event_id(track_number)

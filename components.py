@@ -188,6 +188,16 @@ class ButtonRGB(Button):
     def reset_color(self):
         self.change_color_to(self.default_color)
 
+    def handle_midi_event(self, event, toggle_led=False, blinking_enabled=False):
+        if not event.handled and event.data1 == self.id:
+            event.handled = self.exec(event)
+            if toggle_led:
+                self.led.toggle(event)
+            if blinking_enabled:
+                self.led.blink(event)
+
+
+
 class EndlessEncoder(Feature):
     def __init__(self, id, id_left, id_right, alternative_multiplied_step):
         super().__init__()
@@ -231,12 +241,34 @@ class EndlessEncoder(Feature):
             event.handled = result
 
 class Slider():  # aka Fader
-    def __init__(self, id):
+    def __init__(self, id, fader_midi_channel):
         self.id = id
+        self.FADER_MIDI_CHANNEL = fader_midi_channel
         self.FADER_SMOOTH_SPEED = 469
         self.MAXIMUM_VALUE = round(13072 * 16000 / 12800)
         self.MINIMUM_VALUE = 0
         self.LEVEL_RESET = 856562098
+        self.UNLOCKED_TRACK = -1  # -1 means track is not locked
+        self._assigned_track = self.UNLOCKED_TRACK
+
+    def toggle_lock_track(self, track_number):
+        if self._assigned_track == self.UNLOCKED_TRACK:
+            self._assigned_track = track_number
+        else:
+            self.unlock_track()
+
+    def unlock_track(self):
+        self._assigned_track = self.UNLOCKED_TRACK
+        self.update_device_fader()
+
+    def is_track_locked(self):
+        return self._assigned_track != self.UNLOCKED_TRACK
+
+    def get_track_number(self):
+        if self.is_track_locked():
+            return self._assigned_track
+        else:
+            return wrapper.get_selected_tracknumber()
 
     def track_level_to_slider(self, Value, Max = midi.FromMIDI_Max):
         return round(Value / Max * self.MAXIMUM_VALUE)
@@ -251,3 +283,12 @@ class Slider():  # aka Fader
 
     def midi_message_to_pitchbend_number(self, event):
         return (event.data1 << 7) + event.data2
+
+    def update_device_fader(self):
+        track_number = wrapper.get_selected_tracknumber()
+        trackEventId = wrapper.get_slider_event_id(track_number)
+        level = wrapper.get_slider_event_value(trackEventId)
+        pitchbend = self.track_level_to_slider(level)
+        midi_pitchbend_data = self.pitchbend_number_to_midi_message(pitchbend)
+        wrapper.send_midi_message_to_device(midi_pitchbend_data[0], self.FADER_MIDI_CHANNEL,
+                                            midi_pitchbend_data[1], midi_pitchbend_data[2])
