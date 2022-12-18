@@ -1,12 +1,12 @@
 # name=Presonus Faderport V2
-# url=
-# supportedDevices=
+# url=https://forum.image-line.com/viewtopic.php?p=1676355#p1676355
+# supportedDevices=Faderport V2
 
 import faderport_v2
 
 # Controller Definition
 # Faderport v2 - STUDIO ONE -> Initial setup with Solo button.
-# Warning: MCU(Live) does not support Shift button, please, use STUDIO ONE.
+# Warning: MCU(Live) does not support Shift button, please, use STUDIO ONE. -
 
 # CONTROLLER_MIDI_PROTOCOL
 class PresonusFaderportV2_STUDIO_ONE:

@@ -15,6 +15,7 @@ import midi
 
 ENABLE = 1
 DISABLE = 0
+TOGGLE = -1
 
 # Speed
 HALF_SPEED = 0.5
@@ -160,6 +161,11 @@ def add_marker(event, is_shift_enabled):
 def get_selected_tracknumber():
     return mixer.trackNumber()
 
+def mute_multiple():
+    for track in range(mixer.trackCount()):
+        if mixer.isTrackSelected(track):
+            mute(track)
+
 def set_tracknumber(track_number):
     mixer.setTrackNumber(track_number)
 
@@ -246,13 +252,60 @@ def open_next_plugin():
 def close_window():
     ui.escape()
 
-def bypass():
-    # TODO
-    pass
+def is_bypassed(track_number = get_selected_tracknumber()):
+    return not mixer.isTrackSlotsEnabled(track_number)
 
-def touch():
-    # TODO
-    pass
+def bypass_fx_toggle(*track_number_tuple):
+    track_number = get_value_from_tuple(track_number_tuple)
+    # This "if" is because of TOGGLE not working so far.
+    if mixer.isTrackSlotsEnabled(track_number):
+        operation = DISABLE
+    else:
+        operation = ENABLE
+    mixer.enableTrackSlots(get_value_from_tuple(track_number_tuple), operation)
+
+def bypass_fx_all():
+    for track in range(mixer.trackCount()):
+        bypass_fx_toggle(track)
+
+def bypass_fx_selected():
+    for track in range(mixer.trackCount()):
+        if mixer.isTrackSelected(track):
+            bypass_fx_toggle(track)
+
+def is_reversed_polarity(track_number = get_selected_tracknumber()):
+    return mixer.isTrackRevPolarity(track_number)
+
+def reverse_polarity_selected():
+    for track in range(mixer.trackCount()):
+        if mixer.isTrackSelected(track):
+            reverse_polarity_toggle(track)
+
+def reverse_polarity_toggle(*track_number_tuple):
+    track_number = get_value_from_tuple(track_number_tuple)
+    # This "if" is because of TOGGLE not working so far.
+    if mixer.isTrackRevPolarity(track_number):
+        operation = DISABLE
+    else:
+        operation = ENABLE
+    mixer.revTrackPolarity(track_number, operation)
+
+def is_swap_left_right_channels(track_number = get_selected_tracknumber()):
+    return not mixer.isTrackSwapChannels(track_number)
+
+def swap_left_right_channels_selected():
+    for track in range(mixer.trackCount()):
+        if mixer.isTrackSelected(track):
+            swap_left_right_channels(track)
+
+def swap_left_right_channels(*track_number_tuple):
+    track_number = get_value_from_tuple(track_number_tuple)
+    # This "if" is because of TOGGLE not working so far.
+    if mixer.isTrackSwapChannels(track_number):
+        operation = DISABLE
+    else:
+        operation = ENABLE
+    mixer.swapTrackChannels(track_number, operation)
 
 def undo_redo(event):
     if (transport.globalTransport(midi.FPT_Undo, int(event.data2 > 0) * 2, event.pmeFlags) == midi.GT_Global) & (event.data2 > 0):

@@ -97,13 +97,14 @@ class Controller():
 
         ## Buttons
         self.solo_button.add_feature([], wrapper.solo, self.fader.get_track_number)
-        self.mute_button.add_feature([], wrapper.mute, self.fader.get_track_number)
+        self.mute_button.add_feature([], wrapper.mute_multiple, None)
         self.mute_button.add_feature([self.shift_button.is_enabled], wrapper.mute_clear, None)
         self.arm_button.add_feature([], wrapper.arm, None)
 
-        self.bypass_button.add_feature([], wrapper.open_next_plugin, None)
-        self.bypass_button.add_feature([self.shift_button.is_enabled], wrapper.close_window, None)
-        self.touch_button.add_feature([], wrapper.open_previous_plugin, None)
+        self.bypass_button.add_feature([], wrapper.bypass_fx_selected, None)
+        self.bypass_button.add_feature([self.shift_button.is_enabled], wrapper.bypass_fx_all, None)
+        self.touch_button.add_feature([], wrapper.reverse_polarity_selected, None)
+        self.touch_button.add_feature([self.shift_button.is_enabled], wrapper.swap_left_right_channels_selected, None)
         self.write_button.add_feature([self.write_button.use_event], wrapper.snap, None)
 
         self.prev_button.add_feature([self.shift_button.is_enabled], wrapper.undo, None)
@@ -200,6 +201,9 @@ class Controller():
             self.solo_button.refresh(wrapper.is_solo(selected_tracknumber))
             self.mute_button.refresh(wrapper.is_muted(selected_tracknumber))
             self.arm_button.refresh(wrapper.is_armed(selected_tracknumber))
+            self.bypass_button.refresh(wrapper.is_bypassed(selected_tracknumber))
+            self.touch_button.refresh(wrapper.is_reversed_polarity(selected_tracknumber))
+
             if self.pan_button.is_enabled():
                 self.prev_button.refresh(wrapper.is_pan_left(selected_tracknumber))
                 self.next_button.refresh(wrapper.is_pan_right(selected_tracknumber))

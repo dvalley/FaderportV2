@@ -181,7 +181,7 @@ class ButtonRGB(Button):
 
     def refresh(self, condition):
         if condition:
-            self.change_color_to([255,0,0])
+            self.change_color_to([0,0,255])
         else:
             self.reset_color()
 

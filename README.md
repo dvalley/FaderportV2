@@ -2,11 +2,17 @@
 Script supporting the Presonus Faderport V2 Control Surface 
 More info see here: https://forum.image-line.com/viewtopic.php?p=1676355#p1676355
 
+## Release Notes
+### 1.1.0 
+Added bypass, reverse polarity and swap channel in mixer tracks. 
+Removed open next plugin on bypass button, already included in FL Studio as keyboard shortcut.
+
+
 ## Setup
 
 Create a **faderport** folder in 
 * MacOS: $HOME/Image-Line/FL Studio/Settings/Hardware/
-* Windows: TODO
+* Windows: C:\Program Files\Image-Line\FL Studio 20\System\Hardware
 
 Copy following python files into this folder.
 
@@ -34,13 +40,13 @@ I do not know why but Omni channel must be also set to 1, otherwise unasigned bu
 | Arm | Arm selected mixer track | OK | |
 | Arm + SHIFT | TBD | TODO | Arm All is not a common use case to be implemented |
 | SHIFT  | Enable shift | OK | |
-| Bypass  | Open Next plugin | OK | Open first plugin in mixer selected track |
-| Bypass + SHIFT  | Close window | OK | To close focused plugin |
-| Touch  | TBD | TODO | |
-| Touch + SHIFT  | TBD | TODO | |
+| Bypass  | Bypass | OK | Toggle bypass effect on selected mixer tracks |
+| Bypass + SHIFT  | Bypass all | OK | Toggle bypass effect on all mixer tracks |
+| Touch  | Reverse polarity | OK | Toggle reverse polarity effect on selected mixer tracks |
+| Touch + SHIFT  | Swap left right channel | OK | Toggle Swap left right channel on all mixer tracks |
 | Write  | TBD | TODO | |
 | Write + SHIFT   | TBD | TODO | |
-| Read  | TBD | TODO | |
+| Read  | TBD | TODO | Change to blue color if there are changes and it is not saved |
 | Read + SHIFT   | TBD | TODO | |
 | Prev  | Select previous mixer track | OK | |
 | Prev + SHIFT  | Undo | OK | |
@@ -108,7 +114,7 @@ I do not know why but Omni channel must be also set to 1, otherwise unasigned bu
 | Trigger Elements | Feature | Status | Comments |
 | ---------------- | ------- | ------ | -------- |
 | Fader | Send level to selected or locker mixer | OK | |
-| Touch | Send level to selected or locker mixer | OK | |
+| Touch | Send level to selected or locker mixer | DISABLED | |
 
 TBD: TO BE DEFINED
 
